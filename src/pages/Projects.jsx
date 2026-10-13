@@ -333,7 +333,7 @@ export default function Projects() {
   }, []);
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#F7FBFF] text-slate-800">
+    <main className="premium-page premium-projects min-h-screen overflow-hidden bg-[#F7FBFF] text-slate-800">
       {/* BACKGROUND GLOWS */}
       <div className="pointer-events-none fixed inset-0 -z-0 overflow-hidden">
         <div className="absolute -left-40 -top-40 h-[550px] w-[550px] rounded-full bg-sky-200/35 blur-[140px]" />
@@ -343,16 +343,16 @@ export default function Projects() {
       </div>
 
       {/* HERO */}
-      <section className="relative flex min-h-[58vh] items-center justify-center px-6 py-24">
+      <section className="premium-hero relative flex min-h-[58vh] items-center justify-center px-6 py-24">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease }}
           className="relative z-10 mx-auto max-w-4xl text-center"
         >
-          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-sky-100 bg-white/80 px-5 py-2.5 shadow-[0_8px_30px_rgba(14,165,233,0.08)] backdrop-blur-xl">
-            <Sparkles className="h-4 w-4 text-sky-500" />
-            <span className="text-xs font-bold uppercase tracking-[0.18em] text-sky-700 sm:text-sm">
+          <div className="mb-6 inline-flex items-center gap-2 text-blue-600">
+            <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
+            <span className="font-mono text-xs font-bold uppercase tracking-[0.25em]">
               Portfolio & Deployments
             </span>
           </div>

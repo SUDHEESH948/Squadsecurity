@@ -1,344 +1,404 @@
-
-import React, { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Sparkles,
-  ShieldCheck,
-  Lock,
-  Cpu,
-  Volume2,
-  VolumeX,
-  SkipForward,
-} from "lucide-react";
+import gsap from "gsap";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
+import LightRays from "../LightRays";
 
-import introVideo from "../../assets/intro.mp4";
-// Background slides
-const slides = [
+const HERO_CAMERAS = [
   {
-    id: 1,
-    title: "CCTV & AI Security",
-    icon: ShieldCheck,
-    image:
-      "https://images.unsplash.com/photo-1557597774-9d273605dfa9?q=80&w=1920&auto=format&fit=crop",
+    id: "hikvision",
+    brand: "HIKVISION",
+    tagline: "4K ColorVu Smart Hybrid Bullet",
+    src: "/images/hero-camera.png",
+    alt: "Hikvision 4K ColorVu Surveillance Camera",
+    badge: "Flagship 4K",
   },
   {
-    id: 2,
-    title: "Access Control & Gate Automation",
-    icon: Lock,
-    image:
-      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=1920&auto=format&fit=crop",
+    id: "cpplus",
+    brand: "CP PLUS",
+    tagline: "Guard+ 5MP Vandal-Proof Dome",
+    src: "/images/hero-camera-cpplus.png",
+    alt: "CP PLUS 5MP Vandal Dome CCTV Camera",
+    badge: "5MP Dome AI",
   },
   {
-    id: 3,
-    title: "Smart Home Automation",
-    icon: Cpu,
-    image:
-      "https://images.unsplash.com/photo-1558002038-1055907df827?q=80&w=1920&auto=format&fit=crop",
+    id: "tplink",
+    brand: "TP-LINK",
+    tagline: "VIGI 4MP Full-Color Smart AI",
+    src: "/images/hero-camera-tplink.png",
+    alt: "TP-Link VIGI 4MP Outdoor Bullet CCTV Camera",
+    badge: "VIGI Smart AI",
+  },
+  {
+    id: "prama",
+    brand: "PRAMA",
+    tagline: "India Series 4K Ultra-Low-Light",
+    src: "/images/hero-camera-prama.png",
+    alt: "Prama India 4K Ultra-Low-Light Bullet CCTV Camera",
+    badge: "Prama 4K Matrix",
   },
 ];
 
 export default function HomeHero() {
-  const [introFinished, setIntroFinished] = useState(false);
-  const [introSkipped, setIntroSkipped] = useState(false);
-  const [muted, setMuted] = useState(true);
-  const [progress, setProgress] = useState(0);
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const videoRef = React.useRef(null);
+  const sectionRef = useRef(null);
+  const badgeRef = useRef(null);
+  const headingRef = useRef(null);
+  const descRef = useRef(null);
+  const buttonsRef = useRef(null);
+  const specsRef = useRef(null);
+  const cameraContainerRef = useRef(null);
+  const glowRef = useRef(null);
 
-  // Preload background images
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [direction, setDirection] = useState(1);
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Auto-rotate cameras every 4.5 seconds
   useEffect(() => {
-    slides.forEach((slide) => {
-      const img = new Image();
-      img.src = slide.image;
-    });
-  }, []);
-
-  // Ensure video autoplay with muted audio on mobile & modern browsers
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.muted = muted;
-      videoRef.current.play().catch(() => {});
-    }
-  }, []);
-
-  // Automatically cycle through the hero slides
-  useEffect(() => {
-    if (!introFinished) return;
-
+    if (isPaused) return;
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 5000);
-
+      setDirection(1);
+      setCurrentIndex((prev) => (prev + 1) % HERO_CAMERAS.length);
+    }, 4500);
     return () => clearInterval(timer);
-  }, [introFinished]);
+  }, [isPaused]);
 
-  const finishIntro = () => {
-    setIntroSkipped(true);
-    setIntroFinished(true);
+  const handleNext = () => {
+    setDirection(1);
+    setCurrentIndex((prev) => (prev + 1) % HERO_CAMERAS.length);
   };
 
-  const toggleMute = () => {
-    setMuted((prev) => {
-      const next = !prev;
-      if (videoRef.current) {
-        videoRef.current.muted = next;
+  const handlePrev = () => {
+    setDirection(-1);
+    setCurrentIndex((prev) => (prev - 1 + HERO_CAMERAS.length) % HERO_CAMERAS.length);
+  };
+
+  const handleSelect = (idx) => {
+    setDirection(idx > currentIndex ? 1 : -1);
+    setCurrentIndex(idx);
+  };
+
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    const ctx = gsap.context(() => {
+      if (prefersReducedMotion) {
+        gsap.set(
+          [
+            badgeRef.current,
+            headingRef.current,
+            descRef.current,
+            buttonsRef.current,
+            specsRef.current,
+            cameraContainerRef.current,
+            glowRef.current,
+          ],
+          {
+            opacity: 1,
+            y: 0,
+            x: 0,
+            scale: 1,
+          }
+        );
+        return;
       }
-      return next;
-    });
-  };
 
-  const handleTimeUpdate = (e) => {
-    const video = e.currentTarget;
-    if (video.duration) {
-      setProgress((video.currentTime / video.duration) * 100);
-    }
-  };
+      // Initial state setup for entrance
+      gsap.set(badgeRef.current, { opacity: 0, y: -20 });
+      gsap.set(headingRef.current?.querySelectorAll(".hero-headline-line"), {
+        opacity: 0,
+        y: 40,
+      });
+      gsap.set(descRef.current, { opacity: 0, y: 24 });
+      gsap.set(buttonsRef.current, { opacity: 0, y: 20 });
+      gsap.set(specsRef.current, { opacity: 0, y: 16 });
+      gsap.set(cameraContainerRef.current, {
+        opacity: 0,
+        x: 60,
+        scale: 0.94,
+      });
+      gsap.set(glowRef.current, { opacity: 0, scale: 0.8 });
 
-  const activeSlide = slides[currentSlide];
-  const SlideIcon = activeSlide.icon;
+      // Entrance animation timeline
+      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+
+      tl.to(badgeRef.current, {
+        opacity: 1,
+        y: 0,
+        duration: 0.7,
+        delay: 0.15,
+      })
+        .to(
+          headingRef.current?.querySelectorAll(".hero-headline-line"),
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.95,
+            stagger: 0.14,
+            ease: "power4.out",
+          },
+          "-=0.35"
+        )
+        .to(descRef.current, { opacity: 1, y: 0, duration: 0.75 }, "-=0.55")
+        .to(buttonsRef.current, { opacity: 1, y: 0, duration: 0.7 }, "-=0.55")
+        .to(specsRef.current, { opacity: 1, y: 0, duration: 0.65 }, "-=0.45")
+        .to(
+          cameraContainerRef.current,
+          {
+            opacity: 1,
+            x: 0,
+            scale: 1,
+            duration: 1.25,
+            ease: "power3.out",
+          },
+          "-=1.1"
+        )
+        .to(
+          glowRef.current,
+          {
+            opacity: 1,
+            scale: 1,
+            duration: 1.3,
+            ease: "power2.out",
+          },
+          "-=1.1"
+        );
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  const currentCamera = HERO_CAMERAS[currentIndex];
 
   return (
-    <section className="relative min-h-[92vh] overflow-hidden bg-white selection:bg-blue-100 selection:text-blue-900">
+    <section
+      ref={sectionRef}
+      id="hero"
+      aria-label="CCTV Security Solutions Hero"
+      className="relative isolate min-h-[100svh] w-full overflow-hidden bg-gradient-to-b from-[#F8FAFC] via-[#F1F5F9] to-[#FFFFFF] text-slate-900 flex items-center"
+    >
+      {/* Subtle Architectural Blueprint Grid */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.035]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(37,99,235,1) 1px, transparent 1px), linear-gradient(90deg, rgba(37,99,235,1) 1px, transparent 1px)",
+          backgroundSize: "64px 64px",
+        }}
+      />
 
-      {/* INTRO VIDEO */}
-      <AnimatePresence>
-        {!introFinished && (
-          <motion.div
-            key="intro-video"
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 1.02 }}
-            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black overflow-hidden"
-          >
-            {/* Main Video: object-contain ensures 16:9 widescreen video is never cropped on mobile portrait screens */}
-            <video
-              ref={videoRef}
-              className="relative z-10 h-full w-full object-contain"
-              src={introVideo}
-              autoPlay
-              muted={muted}
-              playsInline
-              preload="auto"
-              onTimeUpdate={handleTimeUpdate}
-              onEnded={finishIntro}
-              onError={finishIntro}
-            />
-
-            {/* Cinematic subtle edge vignette */}
-            <div className="pointer-events-none absolute inset-0 z-20 bg-gradient-to-t from-black/60 via-transparent to-black/40" />
-
-            {/* Video controls */}
-            <div className="absolute right-5 top-5 z-30 flex items-center gap-3 sm:right-10 sm:top-8">
-              <button
-                type="button"
-                onClick={toggleMute}
-                aria-label={muted ? "Unmute introduction" : "Mute introduction"}
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-white/25 bg-black/40 text-white backdrop-blur-md transition hover:bg-white/20 active:scale-95 cursor-pointer"
-              >
-                {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-              </button>
-
-              <button
-                type="button"
-                onClick={finishIntro}
-                className="flex h-11 items-center gap-2 rounded-full border border-white/25 bg-black/40 px-4 text-xs font-semibold uppercase tracking-wider text-white backdrop-blur-md transition hover:bg-white/20 active:scale-95 cursor-pointer"
-              >
-                <SkipForward size={14} />
-                Skip
-              </button>
-            </div>
-
-            {/* Real-time playback progress indicator */}
-            <div className="absolute bottom-0 left-0 z-30 h-1 w-full bg-white/15">
-              <div
-                className="h-full bg-blue-500 transition-[width] duration-150 ease-linear"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* MAIN HERO */}
-      <div className="relative flex min-h-[92vh] items-center justify-center px-4 py-24 sm:px-6">
-
-        {/* Background slider */}
-        <div className="absolute inset-0">
-          <AnimatePresence mode="sync">
-            <motion.div
-              key={activeSlide.id}
-              initial={{ opacity: 0, scale: 1.08 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98 }}
-              transition={{
-                duration: 1.6,
-                ease: [0.16, 1, 0.3, 1],
-              }}
-              className="absolute inset-0"
-            >
-              <img
-                src={activeSlide.image}
-                alt={activeSlide.title}
-                className="h-full w-full object-cover"
-                loading="eager"
-                onError={(event) => {
-                  event.currentTarget.src =
-                    "https://images.unsplash.com/photo-1558002038-1055907df827?q=80&w=1920&auto=format&fit=crop";
-                }}
-              />
-            </motion.div>
-          </AnimatePresence>
-
-          <div className="absolute inset-0 bg-white/55" />
-          <div className="absolute inset-0 bg-gradient-to-b from-white/75 via-white/25 to-white/90" />
-
-          {/* Blueprint grid */}
-          <div
-            className="pointer-events-none absolute inset-0 opacity-[0.04]"
-            style={{
-              backgroundImage:
-                "linear-gradient(rgba(37,99,235,1) 1px, transparent 1px), linear-gradient(90deg, rgba(37,99,235,1) 1px, transparent 1px)",
-              backgroundSize: "50px 50px",
-            }}
-          />
-        </div>
-
-        {/* Hero content */}
-        <div className="relative z-10 mx-auto w-full max-w-6xl text-center">
-
-          <motion.div
-            initial={{ opacity: 0, y: -15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="mb-7 inline-flex max-w-full items-center gap-2 rounded-full border border-blue-200/80 bg-white/90 px-3 py-2 shadow-sm backdrop-blur-md sm:px-4"
-          >
-            <SlideIcon className="h-4 w-4 shrink-0 animate-pulse text-blue-600" />
-
-            <span className="truncate font-mono text-[9px] font-semibold uppercase tracking-[0.12em] text-blue-900 sm:text-[10px] sm:tracking-[0.22em]">
-              {activeSlide.title}
-            </span>
-
-            <span className="h-1 w-1 shrink-0 rounded-full bg-blue-400" />
-
-            <span className="shrink-0 font-mono text-[9px] text-blue-900/60">
-              0{currentSlide + 1}/0{slides.length}
-            </span>
-          </motion.div>
-
-          <motion.h1
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.9,
-              delay: 0.1,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-            className="font-serif text-[clamp(3.3rem,10vw,8rem)] font-normal leading-[0.9] tracking-[-0.045em] text-blue-950"
-          >
-            Smart.
-            <br />
-
-            <span className="relative inline-block italic text-blue-600">
-              Secure.
-              <span className="absolute -bottom-1 left-1/2 h-[2px] w-3/4 -translate-x-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent sm:-bottom-2" />
-            </span>
-
-            <br />
-
-            <span className="text-blue-950/90">Seamless.</span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 25 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.35 }}
-            className="mx-auto mt-7 max-w-2xl px-2 text-sm leading-7 text-blue-950/80 sm:mt-10 sm:text-base lg:text-lg"
-          >
-            Reliable CCTV security, intelligent smart-home automation,
-            and motorized access control systems designed to make modern
-            spaces safer, smarter, and more resilient.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 25 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.5 }}
-            className="mt-8 flex flex-col justify-center gap-3 sm:mt-10 sm:flex-row"
-          >
-            <Link
-              to="/services"
-              className="group inline-flex min-h-12 items-center justify-center gap-4 rounded-full bg-blue-950 px-7 py-3.5 text-xs font-semibold uppercase tracking-[0.12em] text-white shadow-lg shadow-blue-950/15 transition duration-300 hover:scale-[1.03] hover:bg-blue-600"
-            >
-              Explore Services
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 transition-transform group-hover:translate-x-1">
-                <ArrowRight size={14} />
-              </span>
-            </Link>
-
-            <Link
-              to="/contact"
-              className="group inline-flex min-h-12 items-center justify-center gap-3 rounded-full border border-blue-900/20 bg-white/90 px-7 py-3.5 text-xs font-semibold uppercase tracking-[0.12em] text-blue-950 shadow-sm backdrop-blur-sm transition duration-300 hover:border-blue-400 hover:bg-blue-50"
-            >
-              Contact Us
-              <ArrowUpRight className="h-4 w-4 text-blue-600 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-            </Link>
-          </motion.div>
-
-          {/* Service indicators */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8 }}
-            className="mt-12 flex flex-wrap items-center justify-center gap-x-5 gap-y-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-blue-950/70 sm:gap-x-8 sm:text-xs"
-          >
-            <span className="flex items-center gap-2">
-              <ShieldCheck size={15} className="text-blue-600" />
-              CCTV & AI
-            </span>
-
-            <span className="h-1 w-1 rounded-full bg-blue-400" />
-
-            <span className="flex items-center gap-2">
-              <Lock size={15} className="text-blue-600" />
-              Access Control
-            </span>
-
-            <span className="h-1 w-1 rounded-full bg-blue-400" />
-
-            <span className="flex items-center gap-2">
-              <Cpu size={15} className="text-blue-600" />
-              Smart Living
-            </span>
-          </motion.div>
-        </div>
-
-        {/* Decorative accents */}
-        <motion.div
-          initial={{ opacity: 0, x: -30, rotate: 8 }}
-          animate={{ opacity: 1, x: 0, rotate: 8 }}
-          transition={{ duration: 0.8, delay: 0.9 }}
-          className="absolute left-[7%] top-[25%] hidden h-16 w-16 rounded-2xl border border-blue-100 bg-white/80 shadow-md backdrop-blur-md lg:block"
-        >
-          <div className="flex h-full items-center justify-center">
-            <Sparkles className="h-5 w-5 text-blue-500" />
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, scale: 0.7 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 1 }}
-          className="absolute bottom-[18%] right-[8%] hidden h-20 w-20 rounded-full border border-blue-200/80 bg-blue-50/60 backdrop-blur-sm lg:block"
-        >
-          <div className="absolute inset-3 rounded-full border border-blue-200/60" />
-        </motion.div>
-
-        <div className="absolute bottom-[20%] left-[16%] hidden h-2 w-2 rounded-full bg-blue-500 lg:block" />
-        <div className="absolute right-[17%] top-[23%] hidden h-2 w-2 rounded-full bg-blue-400 lg:block" />
+      {/* Ambient Diffuse Atmospheric Flares */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute top-1/4 right-[10%] h-[600px] w-[600px] rounded-full bg-blue-400/15 blur-[160px]" />
+        <div className="absolute bottom-1/4 left-[5%] h-[500px] w-[500px] rounded-full bg-sky-300/20 blur-[150px]" />
       </div>
+
+      {/* Dynamic Interactive Volumetric Light Rays (React Bits) */}
+      <div className="pointer-events-none absolute inset-0 z-[1] overflow-hidden opacity-30 mix-blend-multiply">
+        <LightRays
+          raysOrigin="top-right"
+          raysColor="#0284c7"
+          raysSpeed={1.0}
+          lightSpread={0.7}
+          rayLength={1.3}
+          followMouse={true}
+          mouseInfluence={0.06}
+          noiseAmount={0.05}
+          distortion={0.03}
+          className="w-full h-full"
+        />
+      </div>
+
+      {/* Main Content Container: 50% Typography / 50% Camera Carousel Showcase */}
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-6 sm:px-10 lg:px-16 pt-32 pb-16 lg:py-24">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-8">
+          
+          {/* ================= LEFT COLUMN: 50% Typography & CTAs ================= */}
+          <div className="w-full lg:w-[50%] flex flex-col justify-center text-left z-20">
+            
+            {/* Small Heading / Elegant Text Label */}
+            <div ref={badgeRef} className="mb-4 sm:mb-6 flex items-center gap-2 text-blue-600">
+              <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
+              <span className="font-mono text-xs font-bold uppercase tracking-[0.25em]">
+                SMART SECURITY SOLUTIONS
+              </span>
+            </div>
+
+            {/* Main Headline */}
+            <h1
+              ref={headingRef}
+              className="font-display text-[clamp(2.75rem,5.4vw,5.5rem)] font-bold tracking-[-0.04em] leading-[0.98] text-slate-950"
+            >
+              <span className="hero-headline-line block">See Everything.</span>
+              <span className="hero-headline-line block bg-gradient-to-r from-blue-700 via-blue-600 to-sky-600 bg-clip-text text-transparent">
+                Secure Everything.
+              </span>
+            </h1>
+
+            {/* Description */}
+            <p
+              ref={descRef}
+              className="mt-6 sm:mt-8 max-w-lg text-[15px] sm:text-lg leading-relaxed text-slate-600 font-normal"
+            >
+              Advanced CCTV surveillance solutions designed to protect what matters most with multi-brand intelligent optics.
+            </p>
+
+            {/* Action Buttons */}
+            <div
+              ref={buttonsRef}
+              className="mt-8 sm:mt-10 flex flex-wrap items-center gap-4"
+            >
+              {/* Primary Button */}
+              <Link
+                to="/services"
+                className="group relative inline-flex min-h-[52px] items-center justify-center gap-3 rounded-full bg-slate-950 px-7 sm:px-8 py-3.5 text-xs sm:text-sm font-semibold tracking-wide text-white shadow-[0_10px_30px_rgba(15,23,42,0.18)] transition-all duration-300 hover:bg-blue-600 hover:shadow-[0_10px_35px_rgba(37,99,235,0.35)] active:scale-[0.98]"
+              >
+                <span>Explore Products</span>
+                <ArrowRight
+                  size={16}
+                  className="transition-transform duration-300 group-hover:translate-x-1"
+                />
+              </Link>
+
+              {/* Secondary Button */}
+              <Link
+                to="/services"
+                className="group inline-flex min-h-[52px] items-center justify-center gap-3 rounded-full border border-slate-300/80 bg-white/90 px-7 sm:px-8 py-3.5 text-xs sm:text-sm font-semibold tracking-wide text-slate-800 shadow-sm backdrop-blur-md transition-all duration-300 hover:border-blue-400 hover:bg-slate-50 hover:text-blue-700 active:scale-[0.98]"
+              >
+                <span>Our Solutions</span>
+                <ArrowUpRight
+                  size={16}
+                  className="text-blue-600 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                />
+              </Link>
+            </div>
+
+            {/* Subtle Minimalist Key Specs */}
+            <div
+              ref={specsRef}
+              className="mt-10 sm:mt-12 flex flex-wrap items-center gap-4 sm:gap-6 border-t border-slate-200/80 pt-5 font-mono text-[11px] uppercase tracking-[0.16em] text-slate-500"
+            >
+              <div className="flex items-center gap-1.5">
+                <span className="font-bold text-blue-600">4K</span> Ultra HD
+              </div>
+              <span className="h-1 w-1 rounded-full bg-slate-300" />
+              <div className="flex items-center gap-1.5">
+                <span className="font-bold text-blue-600">AI</span> Smart Detection
+              </div>
+              <span className="h-1 w-1 rounded-full bg-slate-300" />
+              <div className="flex items-center gap-1.5">
+                <span className="font-bold text-blue-600">24/7</span> Continuous Guard
+              </div>
+            </div>
+
+          </div>
+
+          {/* ================= RIGHT COLUMN: ROTATING CAMERA CAROUSEL ================= */}
+          <div
+            className="w-full lg:w-[50%] relative flex flex-col items-center justify-center z-10 mt-6 lg:mt-0"
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+          >
+            {/* Floating Camera Stage */}
+            <div
+              ref={cameraContainerRef}
+              className="relative w-full flex items-center justify-center min-h-[300px] sm:min-h-[380px] lg:min-h-[460px]"
+            >
+              {/* Subtle Sapphire Ambient Glow Behind Camera */}
+              <div
+                ref={glowRef}
+                className="pointer-events-none absolute inset-0 m-auto h-[260px] w-[260px] sm:h-[360px] sm:w-[360px] lg:h-[420px] lg:w-[420px] rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.22)_0%,rgba(37,99,235,0.10)_45%,transparent_70%)] blur-[55px]"
+              />
+
+              {/* Realistic Soft Shadow Synchronized with Float */}
+              <motion.div
+                animate={{
+                  scaleX: [1, 0.88, 1],
+                  scaleY: [1, 0.82, 1],
+                  opacity: [0.35, 0.22, 0.35],
+                }}
+                transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
+                className="pointer-events-none absolute bottom-5 sm:bottom-7 lg:bottom-9 left-1/2 -translate-x-1/2 h-5 sm:h-7 w-[55%] max-w-[320px] rounded-[100%] bg-[radial-gradient(ellipse_at_center,rgba(15,23,42,0.35)_0%,rgba(15,23,42,0.10)_45%,transparent_75%)] blur-[8px]"
+              />
+              <motion.div
+                animate={{
+                  scaleX: [1, 0.84, 1],
+                  scaleY: [1, 0.78, 1],
+                  opacity: [0.45, 0.3, 0.45],
+                }}
+                transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
+                className="pointer-events-none absolute bottom-6 sm:bottom-8 lg:bottom-10 left-1/2 -translate-x-1/2 h-2.5 sm:h-3.5 w-[35%] max-w-[200px] rounded-[100%] bg-[radial-gradient(ellipse_at_center,rgba(15,23,42,0.45)_0%,transparent_70%)] blur-[3.5px]"
+              />
+
+              {/* Carousel 3D Rotating Camera Slide */}
+              <div className="relative w-full flex items-center justify-center">
+                <AnimatePresence mode="wait" custom={direction}>
+                  <motion.div
+                    key={currentCamera.id}
+                    custom={direction}
+                    variants={{
+                      enter: (d) => ({
+                        opacity: 0,
+                        x: d > 0 ? 55 : -55,
+                        scale: 0.9,
+                        rotateY: d > 0 ? 12 : -12,
+                      }),
+                      center: {
+                        opacity: 1,
+                        x: 0,
+                        scale: 1,
+                        rotateY: 0,
+                        transition: {
+                          duration: 0.55,
+                          ease: [0.22, 1, 0.36, 1],
+                        },
+                      },
+                      exit: (d) => ({
+                        opacity: 0,
+                        x: d > 0 ? -55 : 55,
+                        scale: 0.9,
+                        rotateY: d > 0 ? -12 : 12,
+                        transition: {
+                          duration: 0.38,
+                          ease: [0.22, 1, 0.36, 1],
+                        },
+                      }),
+                    }}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    className="relative z-10 flex w-full items-center justify-center select-none"
+                  >
+                    {/* Continuous Floating Breathing Motion */}
+                    <motion.img
+                      src={currentCamera.src}
+                      alt={currentCamera.alt}
+                      fetchPriority="high"
+                      loading="eager"
+                      animate={{ y: [0, -12, 0] }}
+                      transition={{
+                        duration: 3.4,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                      className="h-auto w-full max-w-[340px] sm:max-w-[420px] lg:max-w-[480px] xl:max-w-[510px] object-contain drop-shadow-[0_16px_30px_rgba(15,23,42,0.18)] pointer-events-none transition-transform duration-300"
+                    />
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+      {/* Subtle Bottom Ambient Gradient for Seamless Content Transition */}
+      <div className="pointer-events-none absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-white to-transparent" />
     </section>
   );
 }

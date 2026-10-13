@@ -175,7 +175,7 @@ export default function About() {
   const [activeBenefit, setActiveBenefit] = useState(companyInfo.keyBenefits[0].id);
 
   return (
-    <main className="min-h-screen bg-[#F8FAFC] text-[#0F172A] selection:bg-sky-500 selection:text-white">
+    <main className="premium-page premium-about min-h-screen bg-[#F8FAFC] text-[#0F172A] selection:bg-sky-500 selection:text-white">
       {/* Background Gradients */}
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute -left-[20%] top-0 h-[600px] w-[600px] rounded-full bg-sky-200/40 blur-[130px]" />
@@ -184,21 +184,23 @@ export default function About() {
       </div>
 
       {/* ================= HERO SECTION ================= */}
-      <section className="relative px-6 pt-24 pb-20 sm:px-8 lg:px-12">
+      <section className="premium-hero relative px-6 pt-24 pb-20 sm:px-8 lg:px-12">
         <div className="mx-auto max-w-6xl">
           <div className="flex flex-col items-center text-center">
-            {/* Pill Badge */}
+            {/* Subtle Text Label */}
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 rounded-full border border-sky-200/70 bg-white/80 px-4 py-1.5 shadow-sm backdrop-blur-md"
+              className="mb-4 inline-flex items-center gap-2.5 text-blue-600"
             >
-              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-sky-500 text-white">
-                <ShieldCheck className="h-3 w-3" />
-              </div>
-              <span className="text-[11px] font-bold uppercase tracking-wider text-sky-950">
-                About {companyInfo.name}
+              <img
+                src="/images/squad-logo.png"
+                alt="Squad Security System"
+                className="h-6 w-auto object-contain"
+              />
+              <span className="text-xs font-mono font-bold uppercase tracking-[0.25em] text-blue-600 border-l border-slate-300 pl-2.5">
+                About The Company
               </span>
             </motion.div>
 

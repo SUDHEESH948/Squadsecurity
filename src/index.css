@@ -1,12 +1,26 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 @theme {
   --breakpoint-xs: 320px;
-  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans: "Outfit", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-display: "Outfit", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
-  --font-orbitron: "Orbitron", sans-serif;
+  --font-serif: "Outfit", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Outfit", monospace;
+  --font-orbitron: "Outfit", sans-serif;
+}
+
+:root {
+  --background: #0A1128;
+  --foreground: #F8FAFC;
+  --primary: #2563EB;
+  --primary-foreground: #FFFFFF;
+  --secondary: #0284C7;
+  --secondary-foreground: #FFFFFF;
+  --muted: #1E293B;
+  --muted-foreground: #94A3B8;
+  --border: #334155;
+  --destructive: #EF4444;
 }
 
 .font-orbitron {
@@ -14,23 +28,26 @@
 }
 
 html,
-body,
+body {
+  min-width: 320px;
+  overflow-x: clip;
+  background-color: #F8FAFC;
+  color: #0F172A;
+  font-family: 'Outfit', system-ui, sans-serif;
+}
+
 #root {
   min-width: 320px;
-  overflow-x: hidden;
-  scroll-behavior: smooth;
-  background-color: #0B0D11;
-  color: #F8FAFC;
 }
 
 body {
-  font-family: var(--font-sans);
+  font-family: 'Outfit', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-display);
+h1, h2, h3, h4, h5, h6, p, span, a, button, input, textarea, select, label {
+  font-family: 'Outfit', system-ui, sans-serif;
 }
 
 /* Custom CSS Keyframe Animations */
@@ -89,3 +106,87 @@ h1, h2, h3, h4, h5, h6 {
 .animate-glow-pulse {
   animation: glow-pulse 5s ease-in-out infinite;
 }
+
+/* Smooth Left-to-Right Continuous Flowing Marquee */
+@keyframes brand-flow-ltr {
+  0% {
+    transform: translate3d(-50%, 0, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.animate-brand-flow-ltr {
+  animation: brand-flow-ltr 34s linear infinite;
+}
+
+.animate-brand-flow-ltr:hover {
+  animation-play-state: paused;
+}
+
+.hero-noise {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  mix-blend-mode: soft-light;
+}
+
+/* Premium editorial treatment shared by About, Projects and Contact.
+   It deliberately reuses the existing navy, sky and white palette. */
+.premium-page {
+  position: relative;
+  isolation: isolate;
+}
+
+.premium-page::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  opacity: .38;
+  background-image:
+    linear-gradient(rgba(14, 116, 144, .055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(14, 116, 144, .055) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: linear-gradient(to bottom, black 0%, transparent 34%, transparent 72%, black 100%);
+}
+
+.premium-hero::before,
+.premium-hero::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  z-index: -1;
+}
+
+.premium-hero::before {
+  width: min(70vw, 790px);
+  height: min(70vw, 790px);
+  top: -50%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 1px solid rgba(14, 116, 144, .13);
+  border-radius: 50%;
+  box-shadow: 0 0 0 54px rgba(14, 116, 144, .028), 0 0 0 108px rgba(14, 116, 144, .018);
+}
+
+.premium-hero::after {
+  inset: auto 7% 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(14, 116, 144, .35), transparent);
+}
+
+.premium-page article,
+.premium-page section > div > .rounded-3xl,
+.premium-page section > div > .rounded-\[32px\] {
+  transition: transform .35s ease, box-shadow .35s ease, border-color .35s ease;
+}
+
+@media (min-width: 1024px) {
+  .premium-page article:hover,
+  .premium-page section > div > .rounded-3xl:hover {
+    transform: translateY(-3px);
+  }
+}
+

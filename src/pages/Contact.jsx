@@ -272,7 +272,7 @@ export default function Contact() {
   ];
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#F7FBFF] text-slate-800 font-sans">
+    <main className="premium-page premium-contact min-h-screen overflow-hidden bg-[#F7FBFF] text-slate-800 font-sans">
       {/* BACKGROUND ATMOSPHERE */}
       <div className="pointer-events-none fixed inset-0 -z-0 overflow-hidden">
         <div className="absolute -left-40 -top-40 h-[550px] w-[550px] rounded-full bg-sky-200/35 blur-[140px]" />
@@ -282,16 +282,16 @@ export default function Contact() {
       </div>
 
       {/* HERO SECTION */}
-      <section className="relative flex min-h-[50vh] items-center justify-center px-6 pt-24 pb-14">
+      <section className="premium-hero relative flex min-h-[50vh] items-center justify-center px-6 pt-24 pb-14">
         <div className="relative z-10 mx-auto max-w-4xl text-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, ease }}
-            className="mb-6 inline-flex items-center gap-2 rounded-full border border-sky-100 bg-white/80 px-5 py-2.5 shadow-[0_8px_30px_rgba(14,165,233,0.08)] backdrop-blur-xl"
+            className="mb-4 inline-flex items-center gap-2 text-blue-600"
           >
-            <MessageSquare className="h-4 w-4 text-sky-500" />
-            <span className="text-xs font-bold uppercase tracking-[0.18em] text-sky-700 sm:text-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
+            <span className="font-mono text-xs font-bold uppercase tracking-[0.25em]">
               Connect With Squad Security
             </span>
           </motion.div>
@@ -416,14 +416,18 @@ export default function Contact() {
 
             <div className="relative z-10">
               <div className="mb-8 flex items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/10 shadow-sm backdrop-blur-xl">
-                  <ShieldCheck className="h-7 w-7 text-sky-300" />
+                <div className="rounded-2xl border border-white/20 bg-white px-3.5 py-2 shadow-sm">
+                  <img
+                    src="/images/squad-logo.png"
+                    alt="Squad Security System"
+                    className="h-8 w-auto object-contain"
+                  />
                 </div>
                 <div>
-                  <p className="mb-1 text-xs font-bold uppercase tracking-[0.2em] text-sky-300">
+                  <p className="mb-1 text-xs font-mono font-bold uppercase tracking-[0.2em] text-sky-300">
                     Trusted Security Partner
                   </p>
-                  <h2 className="font-serif text-2xl font-bold text-white sm:text-3xl">
+                  <h2 className="font-serif text-xl sm:text-2xl font-bold text-white">
                     {companyInfo.name}
                   </h2>
                 </div>

@@ -1,0 +1,175 @@
+.masked-heading {
+  position: relative;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  text-wrap: balance;
+  -webkit-font-smoothing: antialiased;
+}
+
+.masked-heading__measure {
+  color: transparent;
+}
+
+.masked-heading__word {
+  display: inline-block;
+  white-space: pre;
+}
+
+.masked-heading__word:not(:last-child)::after {
+  content: ' ';
+}
+
+.masked-heading__baseline {
+  display: inline-block;
+  width: 0;
+  height: 0;
+}
+
+.masked-heading__defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.masked-heading__reveal {
+  position: absolute;
+  inset: 0;
+  display: block;
+  pointer-events: none;
+}
+
+.masked-heading__clip {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.masked-heading__media {
+  position: absolute;
+  inset: 0;
+  display: block;
+  will-change: transform, filter;
+}
+
+.masked-heading__source {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* ==========================================================
+   OFFICIAL SQUAD SECURITY SYSTEM LOGO-MATCHED GRADIENT
+   Squad Royal Blue (#0E52A6) + Squad Golden Yellow (#FBB802)
+   Zero green tint: cleanly bridged with brilliant ice-to-gold crest
+   ========================================================== */
+
+.masked-heading__gradient-source {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: linear-gradient(
+    115deg,
+    #0E52A6 0%,
+    #093C7B 18%,
+    #1860C4 36%,
+    #FFFFFF 48%,
+    #FBB802 62%,
+    #F59E0B 80%,
+    #0E52A6 100%
+  );
+  background-size: 260% 260%;
+  animation: logoGradientShift 8s ease-in-out infinite;
+}
+
+@keyframes logoGradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Internal luminous orbs precisely separated to prevent green mixing */
+.masked-heading__gradient-orb-1 {
+  position: absolute;
+  top: -20%;
+  right: -5%;
+  width: 55%;
+  height: 140%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(251, 184, 2, 0.95) 0%, rgba(245, 158, 11, 0.4) 45%, transparent 70%);
+  filter: blur(24px);
+  animation: orbShift1 7s ease-in-out infinite alternate;
+}
+
+.masked-heading__gradient-orb-2 {
+  position: absolute;
+  top: -20%;
+  left: -5%;
+  width: 60%;
+  height: 140%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(14, 82, 166, 0.95) 0%, rgba(9, 60, 123, 0.4) 45%, transparent 70%);
+  filter: blur(24px);
+  animation: orbShift2 8s ease-in-out infinite alternate;
+}
+
+.masked-heading__gradient-orb-3 {
+  position: absolute;
+  bottom: -15%;
+  left: 42%;
+  width: 35%;
+  height: 120%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(254, 240, 138, 0.4) 40%, transparent 65%);
+  filter: blur(18px);
+  animation: orbShift3 6s ease-in-out infinite alternate;
+}
+
+@keyframes orbShift1 {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(40px, 20px) scale(1.15);
+  }
+  100% {
+    transform: translate(-30px, -15px) scale(0.9);
+  }
+}
+
+@keyframes orbShift2 {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-40px, -20px) scale(1.1);
+  }
+  100% {
+    transform: translate(30px, 20px) scale(0.9);
+  }
+}
+
+@keyframes orbShift3 {
+  0% {
+    transform: translate(0, 0) scale(0.9);
+  }
+  50% {
+    transform: translate(30px, -25px) scale(1.2);
+  }
+  100% {
+    transform: translate(-25px, 20px) scale(1);
+  }
+}
+
+
