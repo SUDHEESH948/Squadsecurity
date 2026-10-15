@@ -11,7 +11,7 @@ import {
   ShieldCheck,
   Compass,
 } from "lucide-react";
-import { companyServices, cctvBrands } from "../../data/servicesData";
+import { companyServices } from "../../data/servicesData";
 
 export default function HomeGallery() {
   const [activeTab, setActiveTab] = useState("surveillance");

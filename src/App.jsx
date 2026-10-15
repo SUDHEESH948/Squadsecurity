@@ -4,8 +4,8 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import FloatingContact from "./components/FloatingContact";
 import SmoothScroll from "./components/SmoothScroll";
+import Home from "./pages/Home";
 
-const Home = lazy(() => import("./pages/Home"));
 const About = lazy(() => import("./pages/About"));
 const Services = lazy(() => import("./pages/Services"));
 const Projects = lazy(() => import("./pages/Projects"));
@@ -19,7 +19,7 @@ export default function App() {
         <div className="min-h-screen bg-[#071019] text-[#0F172A] flex flex-col font-sans">
           <Navbar />
           <main className="flex-1 relative z-10">
-            <Suspense fallback={<div className="min-h-[50vh] bg-[#071019]" />}>
+            <Suspense fallback={<div className="min-h-screen bg-[#071019]" />}>
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/about" element={<About />} />
