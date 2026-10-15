@@ -1,6 +1,6 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
 
-import CctvHeroSlider from "../components/CctvHeroSlider";
+import HomeHero from "../components/home/HomeHero";
 const HomeBrandTicker = lazy(() => import("../components/home/HomeBrandTicker"));
 const HomeCinematicBanner = lazy(() => import("../components/home/HomeCinematicBanner"));
 const HomeAbout = lazy(() => import("../components/home/HomeAbout"));
@@ -43,8 +43,8 @@ export default function Home() {
 
       {/* ================= HOME SECTIONS ================= */}
 
-      {/* 1. Full-Screen Sandwich-Layer CCTV Hero Slider */}
-      <CctvHeroSlider showTopNav={false} />
+      {/* 1. Cinematic Home Hero with Intro Video & 3-Slide Showcase */}
+      <HomeHero />
 
       {/* 2. Flowing Brand Partners Glow Showcase (Left-to-Right Animated Ticker) */}
       <DeferredSection minHeight={120}><HomeBrandTicker /></DeferredSection>

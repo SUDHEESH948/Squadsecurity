@@ -1,404 +1,386 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import gsap from "gsap";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
-import LightRays from "../LightRays";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  ShieldCheck,
+  Lock,
+  Cpu,
+  Volume2,
+  VolumeX,
+  SkipForward,
+  ChevronDown,
+} from "lucide-react";
 
-const HERO_CAMERAS = [
+import introVideo from "../../assets/intro.mp4";
+import homeImage from "../../assets/home.png";
+import solarImage from "../../assets/solar.png";
+import cctvImage from "../../assets/cctv.png";
+
+const slides = [
   {
-    id: "hikvision",
-    brand: "HIKVISION",
-    tagline: "4K ColorVu Smart Hybrid Bullet",
-    src: "/images/hero-camera.png",
-    alt: "Hikvision 4K ColorVu Surveillance Camera",
-    badge: "Flagship 4K",
+    id: 1,
+    image: homeImage,
+    eyebrow: "SMART SECURITY · SMART LIVING",
+    title: "Smart. Secure. Seamless.",
+    description:
+      "Intelligent technology for safer homes, smarter spaces, and effortless everyday living.",
+    icon: ShieldCheck,
+    centerSlogan: true,
   },
   {
-    id: "cpplus",
-    brand: "CP PLUS",
-    tagline: "Guard+ 5MP Vandal-Proof Dome",
-    src: "/images/hero-camera-cpplus.png",
-    alt: "CP PLUS 5MP Vandal Dome CCTV Camera",
-    badge: "5MP Dome AI",
+    id: 2,
+    image: solarImage,
+    eyebrow: "POWERING A SMARTER FUTURE",
+    title: "Clean Energy. Smarter Living.",
+    description:
+      "Discover intelligent solar solutions designed for efficient, sustainable living.",
+    icon: Cpu,
+    centerSlogan: false,
   },
   {
-    id: "tplink",
-    brand: "TP-LINK",
-    tagline: "VIGI 4MP Full-Color Smart AI",
-    src: "/images/hero-camera-tplink.png",
-    alt: "TP-Link VIGI 4MP Outdoor Bullet CCTV Camera",
-    badge: "VIGI Smart AI",
-  },
-  {
-    id: "prama",
-    brand: "PRAMA",
-    tagline: "India Series 4K Ultra-Low-Light",
-    src: "/images/hero-camera-prama.png",
-    alt: "Prama India 4K Ultra-Low-Light Bullet CCTV Camera",
-    badge: "Prama 4K Matrix",
+    id: 3,
+    image: cctvImage,
+    eyebrow: "PROTECTION WITHOUT COMPROMISE",
+    title: "See More. Worry Less.",
+    description:
+      "Advanced CCTV and intelligent surveillance to keep what matters most protected.",
+    icon: Lock,
+    centerSlogan: false,
   },
 ];
 
-export default function HomeHero() {
-  const sectionRef = useRef(null);
-  const badgeRef = useRef(null);
-  const headingRef = useRef(null);
-  const descRef = useRef(null);
-  const buttonsRef = useRef(null);
-  const specsRef = useRef(null);
-  const cameraContainerRef = useRef(null);
-  const glowRef = useRef(null);
+const SLIDE_DURATION = 6500;
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [direction, setDirection] = useState(1);
+export default function HomeHero() {
+  const [introFinished, setIntroFinished] = useState(false);
+  const [muted, setMuted] = useState(true);
+  const [progress, setProgress] = useState(0);
+  const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
-  // Auto-rotate cameras every 4.5 seconds
+  const videoRef = useRef(null);
+  const finishedRef = useRef(false);
+
+  const activeSlide = slides[currentSlide];
+  const ActiveIcon = activeSlide.icon;
+
+  // Isolate intro video: lock background scroll and hide navbar/floating buttons
   useEffect(() => {
-    if (isPaused) return;
-    const timer = setInterval(() => {
-      setDirection(1);
-      setCurrentIndex((prev) => (prev + 1) % HERO_CAMERAS.length);
-    }, 4500);
-    return () => clearInterval(timer);
-  }, [isPaused]);
+    if (!introFinished) {
+      document.body.classList.add("intro-active");
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+    } else {
+      document.body.classList.remove("intro-active");
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    }
 
-  const handleNext = () => {
-    setDirection(1);
-    setCurrentIndex((prev) => (prev + 1) % HERO_CAMERAS.length);
-  };
+    return () => {
+      document.body.classList.remove("intro-active");
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    };
+  }, [introFinished]);
 
-  const handlePrev = () => {
-    setDirection(-1);
-    setCurrentIndex((prev) => (prev - 1 + HERO_CAMERAS.length) % HERO_CAMERAS.length);
-  };
-
-  const handleSelect = (idx) => {
-    setDirection(idx > currentIndex ? 1 : -1);
-    setCurrentIndex(idx);
-  };
-
+  // Preload hero images for smooth switching
   useEffect(() => {
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-
-    const ctx = gsap.context(() => {
-      if (prefersReducedMotion) {
-        gsap.set(
-          [
-            badgeRef.current,
-            headingRef.current,
-            descRef.current,
-            buttonsRef.current,
-            specsRef.current,
-            cameraContainerRef.current,
-            glowRef.current,
-          ],
-          {
-            opacity: 1,
-            y: 0,
-            x: 0,
-            scale: 1,
-          }
-        );
-        return;
-      }
-
-      // Initial state setup for entrance
-      gsap.set(badgeRef.current, { opacity: 0, y: -20 });
-      gsap.set(headingRef.current?.querySelectorAll(".hero-headline-line"), {
-        opacity: 0,
-        y: 40,
-      });
-      gsap.set(descRef.current, { opacity: 0, y: 24 });
-      gsap.set(buttonsRef.current, { opacity: 0, y: 20 });
-      gsap.set(specsRef.current, { opacity: 0, y: 16 });
-      gsap.set(cameraContainerRef.current, {
-        opacity: 0,
-        x: 60,
-        scale: 0.94,
-      });
-      gsap.set(glowRef.current, { opacity: 0, scale: 0.8 });
-
-      // Entrance animation timeline
-      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
-
-      tl.to(badgeRef.current, {
-        opacity: 1,
-        y: 0,
-        duration: 0.7,
-        delay: 0.15,
-      })
-        .to(
-          headingRef.current?.querySelectorAll(".hero-headline-line"),
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.95,
-            stagger: 0.14,
-            ease: "power4.out",
-          },
-          "-=0.35"
-        )
-        .to(descRef.current, { opacity: 1, y: 0, duration: 0.75 }, "-=0.55")
-        .to(buttonsRef.current, { opacity: 1, y: 0, duration: 0.7 }, "-=0.55")
-        .to(specsRef.current, { opacity: 1, y: 0, duration: 0.65 }, "-=0.45")
-        .to(
-          cameraContainerRef.current,
-          {
-            opacity: 1,
-            x: 0,
-            scale: 1,
-            duration: 1.25,
-            ease: "power3.out",
-          },
-          "-=1.1"
-        )
-        .to(
-          glowRef.current,
-          {
-            opacity: 1,
-            scale: 1,
-            duration: 1.3,
-            ease: "power2.out",
-          },
-          "-=1.1"
-        );
-    }, sectionRef);
-
-    return () => ctx.revert();
+    slides.forEach(({ image }) => {
+      const img = new Image();
+      img.src = image;
+    });
   }, []);
 
-  const currentCamera = HERO_CAMERAS[currentIndex];
+  // Autoplay the intro video when mounted
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || introFinished) return;
+
+    video.muted = muted;
+    video.play().catch(() => {
+      // Browsers may block unmuted autoplay; muted autoplay is permitted
+    });
+  }, [introFinished, muted]);
+
+  // Finish intro video handler
+  const finishIntro = useCallback(() => {
+    if (finishedRef.current) return;
+    finishedRef.current = true;
+    setProgress(100);
+
+    if (videoRef.current) {
+      videoRef.current.pause();
+    }
+
+    setIntroFinished(true);
+  }, []);
+
+  // Automatic slide transitions: advance one slide at a time
+  useEffect(() => {
+    if (!introFinished || isPaused) return;
+
+    const timer = window.setInterval(() => {
+      setCurrentSlide((previous) => (previous + 1) % slides.length);
+    }, SLIDE_DURATION);
+
+    return () => window.clearInterval(timer);
+  }, [introFinished, isPaused, currentSlide]);
+
+  const toggleMute = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const nextMuted = !muted;
+    video.muted = nextMuted;
+    setMuted(nextMuted);
+  };
+
+  const handleTimeUpdate = (event) => {
+    const video = event.currentTarget;
+    if (video.duration && Number.isFinite(video.duration)) {
+      setProgress((video.currentTime / video.duration) * 100);
+    }
+  };
+
+  const handleVideoError = () => {
+    finishIntro();
+  };
+
+  const handleSelectSlide = (index) => {
+    setCurrentSlide(index);
+  };
 
   return (
     <section
-      ref={sectionRef}
-      id="hero"
-      aria-label="CCTV Security Solutions Hero"
-      className="relative isolate min-h-[100svh] w-full overflow-hidden bg-gradient-to-b from-[#F8FAFC] via-[#F1F5F9] to-[#FFFFFF] text-slate-900 flex items-center"
+      className="relative isolate min-h-[100svh] overflow-hidden bg-[#071019] text-white selection:bg-sky-300 selection:text-slate-950"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
     >
-      {/* Subtle Architectural Blueprint Grid */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.035]"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(37,99,235,1) 1px, transparent 1px), linear-gradient(90deg, rgba(37,99,235,1) 1px, transparent 1px)",
-          backgroundSize: "64px 64px",
-        }}
-      />
-
-      {/* Ambient Diffuse Atmospheric Flares */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 right-[10%] h-[600px] w-[600px] rounded-full bg-blue-400/15 blur-[160px]" />
-        <div className="absolute bottom-1/4 left-[5%] h-[500px] w-[500px] rounded-full bg-sky-300/20 blur-[150px]" />
-      </div>
-
-      {/* Dynamic Interactive Volumetric Light Rays (React Bits) */}
-      <div className="pointer-events-none absolute inset-0 z-[1] overflow-hidden opacity-30 mix-blend-multiply">
-        <LightRays
-          raysOrigin="top-right"
-          raysColor="#0284c7"
-          raysSpeed={1.0}
-          lightSpread={0.7}
-          rayLength={1.3}
-          followMouse={true}
-          mouseInfluence={0.06}
-          noiseAmount={0.05}
-          distortion={0.03}
-          className="w-full h-full"
-        />
-      </div>
-
-      {/* Main Content Container: 50% Typography / 50% Camera Carousel Showcase */}
-      <div className="relative z-10 mx-auto w-full max-w-7xl px-6 sm:px-10 lg:px-16 pt-32 pb-16 lg:py-24">
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-8">
-          
-          {/* ================= LEFT COLUMN: 50% Typography & CTAs ================= */}
-          <div className="w-full lg:w-[50%] flex flex-col justify-center text-left z-20">
-            
-            {/* Small Heading / Elegant Text Label */}
-            <div ref={badgeRef} className="mb-4 sm:mb-6 flex items-center gap-2 text-blue-600">
-              <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
-              <span className="font-mono text-xs font-bold uppercase tracking-[0.25em]">
-                SMART SECURITY SOLUTIONS
-              </span>
-            </div>
-
-            {/* Main Headline */}
-            <h1
-              ref={headingRef}
-              className="font-display text-[clamp(2.75rem,5.4vw,5.5rem)] font-bold tracking-[-0.04em] leading-[0.98] text-slate-950"
-            >
-              <span className="hero-headline-line block">See Everything.</span>
-              <span className="hero-headline-line block bg-gradient-to-r from-blue-700 via-blue-600 to-sky-600 bg-clip-text text-transparent">
-                Secure Everything.
-              </span>
-            </h1>
-
-            {/* Description */}
-            <p
-              ref={descRef}
-              className="mt-6 sm:mt-8 max-w-lg text-[15px] sm:text-lg leading-relaxed text-slate-600 font-normal"
-            >
-              Advanced CCTV surveillance solutions designed to protect what matters most with multi-brand intelligent optics.
-            </p>
-
-            {/* Action Buttons */}
-            <div
-              ref={buttonsRef}
-              className="mt-8 sm:mt-10 flex flex-wrap items-center gap-4"
-            >
-              {/* Primary Button */}
-              <Link
-                to="/services"
-                className="group relative inline-flex min-h-[52px] items-center justify-center gap-3 rounded-full bg-slate-950 px-7 sm:px-8 py-3.5 text-xs sm:text-sm font-semibold tracking-wide text-white shadow-[0_10px_30px_rgba(15,23,42,0.18)] transition-all duration-300 hover:bg-blue-600 hover:shadow-[0_10px_35px_rgba(37,99,235,0.35)] active:scale-[0.98]"
-              >
-                <span>Explore Products</span>
-                <ArrowRight
-                  size={16}
-                  className="transition-transform duration-300 group-hover:translate-x-1"
-                />
-              </Link>
-
-              {/* Secondary Button */}
-              <Link
-                to="/services"
-                className="group inline-flex min-h-[52px] items-center justify-center gap-3 rounded-full border border-slate-300/80 bg-white/90 px-7 sm:px-8 py-3.5 text-xs sm:text-sm font-semibold tracking-wide text-slate-800 shadow-sm backdrop-blur-md transition-all duration-300 hover:border-blue-400 hover:bg-slate-50 hover:text-blue-700 active:scale-[0.98]"
-              >
-                <span>Our Solutions</span>
-                <ArrowUpRight
-                  size={16}
-                  className="text-blue-600 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                />
-              </Link>
-            </div>
-
-            {/* Subtle Minimalist Key Specs */}
-            <div
-              ref={specsRef}
-              className="mt-10 sm:mt-12 flex flex-wrap items-center gap-4 sm:gap-6 border-t border-slate-200/80 pt-5 font-mono text-[11px] uppercase tracking-[0.16em] text-slate-500"
-            >
-              <div className="flex items-center gap-1.5">
-                <span className="font-bold text-blue-600">4K</span> Ultra HD
-              </div>
-              <span className="h-1 w-1 rounded-full bg-slate-300" />
-              <div className="flex items-center gap-1.5">
-                <span className="font-bold text-blue-600">AI</span> Smart Detection
-              </div>
-              <span className="h-1 w-1 rounded-full bg-slate-300" />
-              <div className="flex items-center gap-1.5">
-                <span className="font-bold text-blue-600">24/7</span> Continuous Guard
-              </div>
-            </div>
-
-          </div>
-
-          {/* ================= RIGHT COLUMN: ROTATING CAMERA CAROUSEL ================= */}
-          <div
-            className="w-full lg:w-[50%] relative flex flex-col items-center justify-center z-10 mt-6 lg:mt-0"
-            onMouseEnter={() => setIsPaused(true)}
-            onMouseLeave={() => setIsPaused(false)}
-          >
-            {/* Floating Camera Stage */}
-            <div
-              ref={cameraContainerRef}
-              className="relative w-full flex items-center justify-center min-h-[300px] sm:min-h-[380px] lg:min-h-[460px]"
-            >
-              {/* Subtle Sapphire Ambient Glow Behind Camera */}
-              <div
-                ref={glowRef}
-                className="pointer-events-none absolute inset-0 m-auto h-[260px] w-[260px] sm:h-[360px] sm:w-[360px] lg:h-[420px] lg:w-[420px] rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.22)_0%,rgba(37,99,235,0.10)_45%,transparent_70%)] blur-[55px]"
-              />
-
-              {/* Realistic Soft Shadow Synchronized with Float */}
+      {/* ==================================================
+          1. INTRO VIDEO OVERLAY (PORTALED DIRECTLY TO BODY)
+          Guaranteed to sit on top of all headers and navbars (z-[99999]).
+          Completely hides navigation while playing.
+          Smooth exit reveals the hero and navbar together.
+      ================================================== */}
+      {typeof document !== "undefined" &&
+        createPortal(
+          <AnimatePresence>
+            {!introFinished && (
               <motion.div
-                animate={{
-                  scaleX: [1, 0.88, 1],
-                  scaleY: [1, 0.82, 1],
-                  opacity: [0.35, 0.22, 0.35],
+                key="intro"
+                initial={{ opacity: 1 }}
+                exit={{
+                  opacity: 0,
+                  scale: 1.02,
                 }}
-                transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
-                className="pointer-events-none absolute bottom-5 sm:bottom-7 lg:bottom-9 left-1/2 -translate-x-1/2 h-5 sm:h-7 w-[55%] max-w-[320px] rounded-[100%] bg-[radial-gradient(ellipse_at_center,rgba(15,23,42,0.35)_0%,rgba(15,23,42,0.10)_45%,transparent_75%)] blur-[8px]"
-              />
-              <motion.div
-                animate={{
-                  scaleX: [1, 0.84, 1],
-                  scaleY: [1, 0.78, 1],
-                  opacity: [0.45, 0.3, 0.45],
+                transition={{
+                  duration: 0.8,
+                  ease: [0.22, 1, 0.36, 1],
                 }}
-                transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
-                className="pointer-events-none absolute bottom-6 sm:bottom-8 lg:bottom-10 left-1/2 -translate-x-1/2 h-2.5 sm:h-3.5 w-[35%] max-w-[200px] rounded-[100%] bg-[radial-gradient(ellipse_at_center,rgba(15,23,42,0.45)_0%,transparent_70%)] blur-[3.5px]"
-              />
+                className="fixed inset-0 z-[99999] flex items-center justify-center overflow-hidden bg-black select-none"
+              >
+                {/* Ambient glow behind video */}
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                  <div className="h-[60vh] w-[90vw] rounded-full bg-sky-500/15 blur-[120px]" />
+                </div>
 
-              {/* Carousel 3D Rotating Camera Slide */}
-              <div className="relative w-full flex items-center justify-center">
-                <AnimatePresence mode="wait" custom={direction}>
-                  <motion.div
-                    key={currentCamera.id}
-                    custom={direction}
-                    variants={{
-                      enter: (d) => ({
-                        opacity: 0,
-                        x: d > 0 ? 55 : -55,
-                        scale: 0.9,
-                        rotateY: d > 0 ? 12 : -12,
-                      }),
-                      center: {
-                        opacity: 1,
-                        x: 0,
-                        scale: 1,
-                        rotateY: 0,
-                        transition: {
-                          duration: 0.55,
-                          ease: [0.22, 1, 0.36, 1],
-                        },
-                      },
-                      exit: (d) => ({
-                        opacity: 0,
-                        x: d > 0 ? -55 : 55,
-                        scale: 0.9,
-                        rotateY: d > 0 ? -12 : 12,
-                        transition: {
-                          duration: 0.38,
-                          ease: [0.22, 1, 0.36, 1],
-                        },
-                      }),
-                    }}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    className="relative z-10 flex w-full items-center justify-center select-none"
+                {/* 16:9 Video centered responsively with object-contain to never crop the logo */}
+                <video
+                  ref={videoRef}
+                  src={introVideo}
+                  autoPlay
+                  muted={muted}
+                  playsInline
+                  preload="auto"
+                  onTimeUpdate={handleTimeUpdate}
+                  onEnded={finishIntro}
+                  onError={handleVideoError}
+                  className="relative z-10 h-full w-full max-h-full max-w-full object-contain"
+                />
+
+                {/* Subtle cinematic gradient overlays on intro */}
+                <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-black/80 via-transparent to-black/50" />
+
+                
+
+                {/* Top controls: Mute & Skip (Responsive padding and button sizes) */}
+                <div className="absolute right-4 top-4 z-30 flex items-center gap-2 sm:right-8 sm:top-8 sm:gap-3">
+                  <button
+                    type="button"
+                    onClick={toggleMute}
+                    aria-label={muted ? "Unmute introduction video" : "Mute introduction video"}
+                    className="flex h-9 w-9 sm:h-11 sm:w-11 cursor-pointer items-center justify-center rounded-full border border-white/20 bg-black/60 text-white backdrop-blur-xl transition hover:scale-105 hover:bg-white/20 active:scale-95 shadow-lg shadow-black/40"
                   >
-                    {/* Continuous Floating Breathing Motion */}
-                    <motion.img
-                      src={currentCamera.src}
-                      alt={currentCamera.alt}
-                      fetchPriority="high"
-                      loading="eager"
-                      animate={{ y: [0, -12, 0] }}
-                      transition={{
-                        duration: 3.4,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                      }}
-                      className="h-auto w-full max-w-[340px] sm:max-w-[420px] lg:max-w-[480px] xl:max-w-[510px] object-contain drop-shadow-[0_16px_30px_rgba(15,23,42,0.18)] pointer-events-none transition-transform duration-300"
-                    />
-                  </motion.div>
-                </AnimatePresence>
+                    {muted ? <VolumeX className="h-4 w-4 sm:h-5 sm:w-5" /> : <Volume2 className="h-4 w-4 sm:h-5 sm:w-5" />}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={finishIntro}
+                    className="flex h-9 sm:h-11 cursor-pointer items-center gap-1.5 sm:gap-2 rounded-full border border-white/20 bg-black/60 px-3.5 sm:px-5 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.14em] text-white backdrop-blur-xl transition hover:scale-105 hover:bg-white/20 active:scale-95 shadow-lg shadow-black/40"
+                  >
+                    <span>Skip</span>
+                    <SkipForward className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  </button>
+                </div>
+
+                {/* Video playback progress indicator */}
+                
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body
+        )}
+
+      {/* ==================================================
+          2. CINEMATIC HERO SECTION
+          Only active slide is visible with smooth transitions.
+      ================================================== */}
+      <div className="relative min-h-[100svh] overflow-hidden">
+        {/* 3 HERO SLIDES (home.png, solar.png, cctv.png)
+            Smooth cross-fade and subtle Ken-Burns zoom */}
+        <AnimatePresence mode="sync">
+          {introFinished && (
+            <motion.div
+              key={`slide-img-${activeSlide.id}`}
+              initial={{ opacity: 0, scale: 1.05 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{
+                opacity: { duration: 1.2, ease: [0.22, 1, 0.36, 1] },
+                scale: { duration: SLIDE_DURATION / 1000, ease: "linear" },
+              }}
+              className="absolute inset-0"
+            >
+              <img
+                src={activeSlide.image}
+                alt={activeSlide.title}
+                draggable="false"
+                className="h-full w-full select-none object-cover"
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        
+        
+
+        {/* ==================================================
+            3. FIRST SLIDE: “Smart. Secure. Seamless.”
+               Prominently displayed in the center.
+        ================================================== */}
+        <AnimatePresence mode="wait">
+          {introFinished && activeSlide.centerSlogan && (
+            <motion.div
+              key="center-slogan"
+              initial={{ opacity: 0, y: 25, filter: "blur(8px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              exit={{ opacity: 0, y: -20, filter: "blur(6px)" }}
+              transition={{
+                duration: 0.9,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              className="absolute inset-0 z-10 flex items-center justify-center px-5 pt-20 pb-24 text-center sm:px-10 sm:py-0"
+            >
+              <div className="max-w-4xl">
+    
+
+                <h1 className="text-[clamp(2.5rem,8vw,6.5rem)] font-extrabold leading-[1.02] tracking-tight text-white">
+                  Smart.{" "}
+                  <span className="font-serif italic font-normal text-sky-300 drop-shadow-[0_0_30px_rgba(56,189,248,0.4)]">
+                    Secure.
+                  </span>{" "}
+                  Seamless.
+                </h1>
+
+                <motion.div
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ duration: 0.8, delay: 0.45 }}
+                  className="mx-auto my-4 h-[2px] w-20 origin-center bg-gradient-to-r from-transparent via-sky-400 to-transparent sm:my-6 sm:w-32"
+                />
+
+                <motion.p
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.7, delay: 0.4 }}
+                  className="mx-auto max-w-xl text-xs leading-relaxed text-white/80 sm:text-sm sm:leading-7 lg:text-base"
+                >
+                  Intelligent technology for safer homes, smarter spaces, and effortless everyday living. Engineered for modern peace of mind.
+                </motion.p>
+
+               
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ==================================================
+            5. BOTTOM-LEFT CAPTION POSITION
+            Each slide's caption is positioned at the bottom-left.
+            (Shown on slides when center slogan is not active,
+            ensuring no duplicate overlapping text on Slide 1).
+        ================================================== */}
+        <AnimatePresence mode="wait">
+          {introFinished && !activeSlide.centerSlogan && (
+            <motion.div
+              key={`caption-${activeSlide.id}`}
+              initial={{ opacity: 0, x: -30, filter: "blur(6px)" }}
+              animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+              exit={{ opacity: 0, x: -20, filter: "blur(4px)" }}
+              transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute bottom-24 left-5 z-10 max-w-[88%] sm:bottom-28 sm:left-10 sm:max-w-xl lg:bottom-28 lg:left-16"
+            >
+              <div className="mb-3 flex items-center gap-3 sm:mb-4">
+                <span className="h-0.5 w-8 bg-sky-400 sm:w-12" />
+                <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-sky-200 sm:text-[10px]">
+                  {activeSlide.eyebrow}
+                </span>
               </div>
 
-            </div>
+              <h2 className="text-2xl font-bold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl">
+                {activeSlide.title}
+              </h2>
 
+              <p className="mt-3 max-w-md text-xs leading-relaxed text-white/80 sm:text-sm sm:leading-7">
+                {activeSlide.description}
+              </p>
+
+              
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ==================================================
+            SLIDER CONTROLS & NAVIGATION
+        ================================================== */}
+        <div className="absolute bottom-6 left-5 right-5 z-20 flex items-end justify-between sm:bottom-8 sm:left-10 sm:right-10 lg:left-16 lg:right-16">
+          {/* Slide indicators with progress line */}
+          <div className="flex items-center gap-2.5 sm:gap-4">
+            {slides.map((slide, index) => (
+              <button
+                key={slide.id}
+                type="button"
+                onClick={() => handleSelectSlide(index)}
+                aria-label={`Show slide ${index + 1}: ${slide.title}`}
+                aria-current={currentSlide === index ? "true" : undefined}
+                className="group flex cursor-pointer items-center gap-2 py-2 sm:gap-3"
+              >
+                
+
+                
+              </button>
+            ))}
           </div>
 
+         
         </div>
-      </div>
 
-      {/* Subtle Bottom Ambient Gradient for Seamless Content Transition */}
-      <div className="pointer-events-none absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-white to-transparent" />
+        
+      </div>
     </section>
   );
 }

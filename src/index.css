@@ -190,3 +190,21 @@ h1, h2, h3, h4, h5, h6, p, span, a, button, input, textarea, select, label {
   }
 }
 
+/* ================= INTRO VIDEO ISOLATION ================= */
+header {
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+body.intro-active header {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateY(-28px) !important;
+}
+
+body.intro-active aside[aria-label="Quick Contact Shortcuts"] {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateY(20px) !important;
+  transition: opacity 0.4s ease, transform 0.4s ease !important;
+}
+
