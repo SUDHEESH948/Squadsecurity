@@ -1,23 +1,23 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowRight,
-  ArrowUpRight,
   ShieldCheck,
   Lock,
   Cpu,
   Volume2,
   VolumeX,
   SkipForward,
-  ChevronDown,
 } from "lucide-react";
 
-import introVideo from "../../assets/intro.mp4";
+import introVideo from "../../assets/newintro.mp4";
 import homeImage from "../../assets/home.png";
 import solarImage from "../../assets/solar.png";
 import cctvImage from "../../assets/cctv.png";
+
+const NAVY = "#061426";
+const DEEP_NAVY = "#071A33";
+const SLIDE_DURATION = 6500;
 
 const slides = [
   {
@@ -52,8 +52,6 @@ const slides = [
   },
 ];
 
-const SLIDE_DURATION = 6500;
-
 export default function HomeHero() {
   const [introFinished, setIntroFinished] = useState(false);
   const [muted, setMuted] = useState(true);
@@ -65,9 +63,8 @@ export default function HomeHero() {
   const finishedRef = useRef(false);
 
   const activeSlide = slides[currentSlide];
-  const ActiveIcon = activeSlide.icon;
 
-  // Isolate intro video: lock background scroll and hide navbar/floating buttons
+  // Lock scrolling while the intro video is visible.
   useEffect(() => {
     if (!introFinished) {
       document.body.classList.add("intro-active");
@@ -86,7 +83,7 @@ export default function HomeHero() {
     };
   }, [introFinished]);
 
-  // Preload hero images for smooth switching
+  // Preload images for smoother slide transitions.
   useEffect(() => {
     slides.forEach(({ image }) => {
       const img = new Image();
@@ -94,20 +91,23 @@ export default function HomeHero() {
     });
   }, []);
 
-  // Autoplay the intro video when mounted
+  // Start the intro video.
   useEffect(() => {
     const video = videoRef.current;
+
     if (!video || introFinished) return;
 
     video.muted = muted;
+
     video.play().catch(() => {
-      // Browsers may block unmuted autoplay; muted autoplay is permitted
+      // Muted autoplay is the most reliable browser option.
     });
   }, [introFinished, muted]);
 
-  // Finish intro video handler
+  // Finish the intro exactly once.
   const finishIntro = useCallback(() => {
     if (finishedRef.current) return;
+
     finishedRef.current = true;
     setProgress(100);
 
@@ -118,7 +118,7 @@ export default function HomeHero() {
     setIntroFinished(true);
   }, []);
 
-  // Automatic slide transitions: advance one slide at a time
+  // Automatically advance slides every 6.5 seconds.
   useEffect(() => {
     if (!introFinished || isPaused) return;
 
@@ -127,8 +127,9 @@ export default function HomeHero() {
     }, SLIDE_DURATION);
 
     return () => window.clearInterval(timer);
-  }, [introFinished, isPaused, currentSlide]);
+  }, [introFinished, isPaused]);
 
+  // Toggle intro video audio.
   const toggleMute = () => {
     const video = videoRef.current;
     if (!video) return;
@@ -138,13 +139,16 @@ export default function HomeHero() {
     setMuted(nextMuted);
   };
 
+  // Update video progress.
   const handleTimeUpdate = (event) => {
     const video = event.currentTarget;
+
     if (video.duration && Number.isFinite(video.duration)) {
       setProgress((video.currentTime / video.duration) * 100);
     }
   };
 
+  // If the video cannot load, continue to the hero.
   const handleVideoError = () => {
     finishIntro();
   };
@@ -155,16 +159,13 @@ export default function HomeHero() {
 
   return (
     <section
-      className="relative isolate min-h-[100svh] overflow-hidden bg-[#071019] text-white selection:bg-sky-300 selection:text-slate-950"
+      className="relative isolate min-h-[100svh] overflow-hidden bg-[#061426] text-white selection:bg-sky-300 selection:text-slate-950"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      {/* ==================================================
-          1. INTRO VIDEO OVERLAY (PORTALED DIRECTLY TO BODY)
-          Guaranteed to sit on top of all headers and navbars (z-[99999]).
-          Completely hides navigation while playing.
-          Smooth exit reveals the hero and navbar together.
-      ================================================== */}
+      {/* =========================================
+          1. CINEMATIC INTRO VIDEO OVERLAY
+      ========================================= */}
       {typeof document !== "undefined" &&
         createPortal(
           <AnimatePresence>
@@ -172,76 +173,70 @@ export default function HomeHero() {
               <motion.div
                 key="intro"
                 initial={{ opacity: 1 }}
-                exit={{
-                  opacity: 0,
-                  scale: 1.02,
-                }}
+                exit={{ opacity: 0, scale: 1.02 }}
                 transition={{
                   duration: 0.8,
                   ease: [0.22, 1, 0.36, 1],
                 }}
-                className="fixed inset-0 z-[99999] flex items-center justify-center overflow-hidden bg-black select-none"
+                className="fixed inset-0 z-[99999] flex items-center justify-center overflow-hidden bg-white select-none"
               >
-                {/* Ambient glow behind video */}
-                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                  <div className="h-[60vh] w-[90vw] rounded-full bg-sky-500/15 blur-[120px]" />
+                {/* Fullscreen Video container */}
+                <div className="relative z-10 flex h-full w-full items-center justify-center">
+                  <video
+                    ref={videoRef}
+                    src={introVideo}
+                    autoPlay
+                    muted={muted}
+                    playsInline
+                    preload="auto"
+                    onTimeUpdate={handleTimeUpdate}
+                    onEnded={finishIntro}
+                    onError={handleVideoError}
+                    className="h-full w-full object-contain md:object-cover"
+                  />
                 </div>
 
-                {/* 16:9 Video centered responsively with object-contain to never crop the logo */}
-                <video
-                  ref={videoRef}
-                  src={introVideo}
-                  autoPlay
-                  muted={muted}
-                  playsInline
-                  preload="auto"
-                  onTimeUpdate={handleTimeUpdate}
-                  onEnded={finishIntro}
-                  onError={handleVideoError}
-                  className="relative z-10 h-full w-full max-h-full max-w-full object-contain"
-                />
+                {/* Video progress indicator */}
 
-                {/* Subtle cinematic gradient overlays on intro */}
-                <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-black/80 via-transparent to-black/50" />
-
-                
-
-                {/* Top controls: Mute & Skip (Responsive padding and button sizes) */}
-                <div className="absolute right-4 top-4 z-30 flex items-center gap-2 sm:right-8 sm:top-8 sm:gap-3">
+                {/* Mute and Skip controls */}
+                <div className="absolute right-4 top-4 z-40 flex items-center gap-2 sm:right-8 sm:top-8 sm:gap-3">
                   <button
                     type="button"
                     onClick={toggleMute}
-                    aria-label={muted ? "Unmute introduction video" : "Mute introduction video"}
-                    className="flex h-9 w-9 sm:h-11 sm:w-11 cursor-pointer items-center justify-center rounded-full border border-white/20 bg-black/60 text-white backdrop-blur-xl transition hover:scale-105 hover:bg-white/20 active:scale-95 shadow-lg shadow-black/40"
+                    aria-label={
+                      muted
+                        ? "Unmute introduction video"
+                        : "Mute introduction video"
+                    }
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-700/20 bg-[#071A33]/90 text-white shadow-lg backdrop-blur-xl transition duration-300 hover:scale-105 hover:bg-blue-600 hover:border-blue-500 active:scale-95 sm:h-11 sm:w-11"
                   >
-                    {muted ? <VolumeX className="h-4 w-4 sm:h-5 sm:w-5" /> : <Volume2 className="h-4 w-4 sm:h-5 sm:w-5" />}
+                    {muted ? (
+                      <VolumeX className="h-4 w-4 sm:h-5 sm:w-5" />
+                    ) : (
+                      <Volume2 className="h-4 w-4 sm:h-5 sm:w-5" />
+                    )}
                   </button>
 
                   <button
                     type="button"
                     onClick={finishIntro}
-                    className="flex h-9 sm:h-11 cursor-pointer items-center gap-1.5 sm:gap-2 rounded-full border border-white/20 bg-black/60 px-3.5 sm:px-5 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.14em] text-white backdrop-blur-xl transition hover:scale-105 hover:bg-white/20 active:scale-95 shadow-lg shadow-black/40"
+                    className="flex h-10 items-center gap-2 rounded-full border border-slate-700/20 bg-[#071A33]/90 px-4 text-[10px] font-semibold uppercase tracking-[0.14em] text-white shadow-lg backdrop-blur-xl transition duration-300 hover:scale-105 hover:bg-blue-600 hover:border-blue-500 active:scale-95 sm:h-11 sm:px-5 sm:text-xs"
                   >
                     <span>Skip</span>
-                    <SkipForward className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                    <SkipForward className="h-3.5 w-3.5" />
                   </button>
                 </div>
-
-                {/* Video playback progress indicator */}
-                
               </motion.div>
             )}
           </AnimatePresence>,
-          document.body
+          document.body,
         )}
 
-      {/* ==================================================
-          2. CINEMATIC HERO SECTION
-          Only active slide is visible with smooth transitions.
-      ================================================== */}
-      <div className="relative min-h-[100svh] overflow-hidden">
-        {/* 3 HERO SLIDES (home.png, solar.png, cctv.png)
-            Smooth cross-fade and subtle Ken-Burns zoom */}
+      {/* =========================================
+          2. MAIN CINEMATIC HERO
+      ========================================= */}
+      <div className="relative min-h-[100svh] overflow-hidden bg-[#061426]">
+        {/* Background slides */}
         <AnimatePresence mode="sync">
           {introFinished && (
             <motion.div
@@ -250,8 +245,14 @@ export default function HomeHero() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
               transition={{
-                opacity: { duration: 1.2, ease: [0.22, 1, 0.36, 1] },
-                scale: { duration: SLIDE_DURATION / 1000, ease: "linear" },
+                opacity: {
+                  duration: 1.2,
+                  ease: [0.22, 1, 0.36, 1],
+                },
+                scale: {
+                  duration: SLIDE_DURATION / 1000,
+                  ease: "linear",
+                },
               }}
               className="absolute inset-0"
             >
@@ -261,17 +262,17 @@ export default function HomeHero() {
                 draggable="false"
                 className="h-full w-full select-none object-cover"
               />
+
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#061426] via-[#061426]/15 to-[#061426]/65" />
+
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#061426]/35 via-transparent to-[#061426]/10" />
             </motion.div>
           )}
         </AnimatePresence>
 
-        
-        
-
-        {/* ==================================================
-            3. FIRST SLIDE: “Smart. Secure. Seamless.”
-               Prominently displayed in the center.
-        ================================================== */}
+        {/* =========================================
+            3. CENTERED FIRST-SLIDE SLOGAN
+        ========================================= */}
         <AnimatePresence mode="wait">
           {introFinished && activeSlide.centerSlogan && (
             <motion.div
@@ -283,14 +284,20 @@ export default function HomeHero() {
                 duration: 0.9,
                 ease: [0.22, 1, 0.36, 1],
               }}
-              className="absolute inset-0 z-10 flex items-center justify-center px-5 pt-20 pb-24 text-center sm:px-10 sm:py-0"
+              className="absolute inset-0 z-10 flex items-center justify-center px-5 pb-24 pt-20 text-center sm:px-10 sm:py-0"
             >
-              <div className="max-w-4xl">
-    
+              <div className="max-w-5xl">
+                <div className="mb-5 flex items-center justify-center gap-3 sm:mb-7">
+                  <span className="h-px w-7 bg-sky-400/80 sm:w-12" />
+                  <span className="text-[9px] font-semibold uppercase tracking-[0.25em] text-sky-200 sm:text-xs">
+                    Smart Security · Smart Living
+                  </span>
+                  <span className="h-px w-7 bg-sky-400/80 sm:w-12" />
+                </div>
 
                 <h1 className="text-[clamp(2.5rem,8vw,6.5rem)] font-extrabold leading-[1.02] tracking-tight text-white">
                   Smart.{" "}
-                  <span className="font-serif italic font-normal text-sky-300 drop-shadow-[0_0_30px_rgba(56,189,248,0.4)]">
+                  <span className="font-serif font-normal italic text-sky-300 drop-shadow-[0_0_30px_rgba(56,189,248,0.4)]">
                     Secure.
                   </span>{" "}
                   Seamless.
@@ -300,30 +307,27 @@ export default function HomeHero() {
                   initial={{ scaleX: 0 }}
                   animate={{ scaleX: 1 }}
                   transition={{ duration: 0.8, delay: 0.45 }}
-                  className="mx-auto my-4 h-[2px] w-20 origin-center bg-gradient-to-r from-transparent via-sky-400 to-transparent sm:my-6 sm:w-32"
+                  className="mx-auto my-5 h-[2px] w-24 origin-center bg-gradient-to-r from-transparent via-sky-400 to-transparent sm:my-7 sm:w-36"
                 />
 
                 <motion.p
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.7, delay: 0.4 }}
-                  className="mx-auto max-w-xl text-xs leading-relaxed text-white/80 sm:text-sm sm:leading-7 lg:text-base"
+                  className="mx-auto max-w-2xl text-xs leading-relaxed text-white/85 sm:text-sm sm:leading-7 lg:text-base"
                 >
-                  Intelligent technology for safer homes, smarter spaces, and effortless everyday living. Engineered for modern peace of mind.
+                  Intelligent technology for safer homes, smarter spaces, and
+                  effortless everyday living. Engineered for modern peace of
+                  mind.
                 </motion.p>
-
-               
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* ==================================================
-            5. BOTTOM-LEFT CAPTION POSITION
-            Each slide's caption is positioned at the bottom-left.
-            (Shown on slides when center slogan is not active,
-            ensuring no duplicate overlapping text on Slide 1).
-        ================================================== */}
+        {/* =========================================
+            4. CAPTIONS FOR OTHER SLIDES
+        ========================================= */}
         <AnimatePresence mode="wait">
           {introFinished && !activeSlide.centerSlogan && (
             <motion.div
@@ -331,7 +335,10 @@ export default function HomeHero() {
               initial={{ opacity: 0, x: -30, filter: "blur(6px)" }}
               animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
               exit={{ opacity: 0, x: -20, filter: "blur(4px)" }}
-              transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+              transition={{
+                duration: 0.65,
+                ease: [0.22, 1, 0.36, 1],
+              }}
               className="absolute bottom-24 left-5 z-10 max-w-[88%] sm:bottom-28 sm:left-10 sm:max-w-xl lg:bottom-28 lg:left-16"
             >
               <div className="mb-3 flex items-center gap-3 sm:mb-4">
@@ -345,41 +352,22 @@ export default function HomeHero() {
                 {activeSlide.title}
               </h2>
 
-              <p className="mt-3 max-w-md text-xs leading-relaxed text-white/80 sm:text-sm sm:leading-7">
+              <p className="mt-3 max-w-md text-xs leading-relaxed text-white/85 sm:text-sm sm:leading-7">
                 {activeSlide.description}
               </p>
 
-              
+              <a
+                href="/services"
+                className="group mt-5 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.15em] text-sky-300 transition-colors hover:text-white sm:mt-7 sm:text-xs"
+              >
+                Discover More
+                <span className="transition-transform duration-300 group-hover:translate-x-1">
+                  →
+                </span>
+              </a>
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* ==================================================
-            SLIDER CONTROLS & NAVIGATION
-        ================================================== */}
-        <div className="absolute bottom-6 left-5 right-5 z-20 flex items-end justify-between sm:bottom-8 sm:left-10 sm:right-10 lg:left-16 lg:right-16">
-          {/* Slide indicators with progress line */}
-          <div className="flex items-center gap-2.5 sm:gap-4">
-            {slides.map((slide, index) => (
-              <button
-                key={slide.id}
-                type="button"
-                onClick={() => handleSelectSlide(index)}
-                aria-label={`Show slide ${index + 1}: ${slide.title}`}
-                aria-current={currentSlide === index ? "true" : undefined}
-                className="group flex cursor-pointer items-center gap-2 py-2 sm:gap-3"
-              >
-                
-
-                
-              </button>
-            ))}
-          </div>
-
-         
-        </div>
-
-        
       </div>
     </section>
   );

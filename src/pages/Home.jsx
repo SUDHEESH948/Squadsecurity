@@ -28,7 +28,7 @@ function DeferredSection({ children, minHeight = 320 }) {
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen w-full overflow-x-clip bg-[#F8FAFC] text-[#0F172A] selection:bg-blue-600 selection:text-white">
+    <main className="relative min-h-screen w-full overflow-x-clip bg-[#071019] text-[#0F172A] selection:bg-blue-600 selection:text-white">
       {/* ================= GLOBAL AMBIENT BACKGROUND ================= */}
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         {/* Soft Sapphire Ambient Flare */}

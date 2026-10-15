@@ -28,19 +28,19 @@
 }
 
 html,
-body {
-  min-width: 320px;
-  overflow-x: clip;
-  background-color: #F8FAFC;
-  color: #0F172A;
-  font-family: 'Outfit', system-ui, sans-serif;
-}
-
+body,
 #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
   min-width: 320px;
+  background-color: #071019;
 }
 
+html,
 body {
+  overflow-x: clip;
+  color: #0F172A;
   font-family: 'Outfit', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -192,19 +192,19 @@ h1, h2, h3, h4, h5, h6, p, span, a, button, input, textarea, select, label {
 
 /* ================= INTRO VIDEO ISOLATION ================= */
 header {
-  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 body.intro-active header {
-  opacity: 0 !important;
-  pointer-events: none !important;
-  transform: translateY(-28px) !important;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-28px);
 }
 
 body.intro-active aside[aria-label="Quick Contact Shortcuts"] {
-  opacity: 0 !important;
-  pointer-events: none !important;
-  transform: translateY(20px) !important;
-  transition: opacity 0.4s ease, transform 0.4s ease !important;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(20px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
 }
 

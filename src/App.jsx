@@ -16,10 +16,10 @@ export default function App() {
   return (
     <Router>
       <SmoothScroll>
-        <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex flex-col font-sans">
+        <div className="min-h-screen bg-[#071019] text-[#0F172A] flex flex-col font-sans">
           <Navbar />
-          <main className="flex-1 relative z-10 bg-[#F8FAFC]">
-            <Suspense fallback={<div className="min-h-[50vh] bg-[#F8FAFC]" />}>
+          <main className="flex-1 relative z-10">
+            <Suspense fallback={<div className="min-h-[50vh] bg-[#071019]" />}>
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/about" element={<About />} />
