@@ -15,7 +15,7 @@ import introVideo from "../../assets/newintro.mp4";
 import introPoster from "../../assets/intro-poster.jpg";
 import homeImage from "../../assets/home.png";
 import solarImage from "../../assets/solar.png";
-import cctvImage from "../../assets/cctv.png";
+import cctvImage from "../../assets/cctv1.png";
 
 const SLIDE_DURATION = 6500;
 
