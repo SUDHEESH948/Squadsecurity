@@ -44,7 +44,7 @@ const slides = [
     id: 3,
     image: cctvImage,
     eyebrow: "PROTECTION WITHOUT COMPROMISE",
-    title: "See More. Worry Less.",
+    title: "Smarter Surveillance. Safer Spaces.",
     description:
       "Advanced CCTV and intelligent surveillance to keep what matters most protected.",
     icon: Lock,
