@@ -13,6 +13,8 @@ import {
 
 import introVideo from "../../assets/newintro.mp4";
 import introPoster from "../../assets/intro-poster.jpg";
+import introVideoMobile from "../../assets/newintro-mobile.mp4";
+import introPosterMobile from "../../assets/intro-poster-mobile.jpg";
 import homeImage from "../../assets/home.png";
 import solarImage from "../../assets/solar.png";
 import cctvImage from "../../assets/cctv1.png";
@@ -59,11 +61,42 @@ export default function HomeHero() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [autoplayBlocked, setAutoplayBlocked] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window !== "undefined") {
+      const matchQuery = window.matchMedia?.("(max-width: 767px)")?.matches;
+      const isNarrow = window.innerWidth < 768;
+      const isMobileUA = /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
+      return Boolean(matchQuery || isNarrow || isMobileUA);
+    }
+    return false;
+  });
 
   const videoRef = useRef(null);
   const finishedRef = useRef(false);
 
   const activeSlide = slides[currentSlide];
+
+  // Dynamic device detection on resize/orientation change
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const checkMobile = () => {
+      const matchQuery = window.matchMedia?.("(max-width: 767px)")?.matches;
+      const isNarrow = window.innerWidth < 768;
+      const isMobileUA = /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
+      setIsMobile(Boolean(matchQuery || isNarrow || isMobileUA));
+    };
+
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  const activeIntroVideo = isMobile ? introVideoMobile : introVideo;
+  const activeIntroPoster = isMobile ? introPosterMobile : introPoster;
 
   // Lock scrolling while the intro video is visible.
   useEffect(() => {
@@ -102,7 +135,7 @@ export default function HomeHero() {
     setIntroFinished(true);
   }, []);
 
-  // Start the intro video with resilient autoplay handling and 10s safety fallback.
+  // Start the intro video with resilient autoplay handling and device-aware fallback.
   useEffect(() => {
     const video = videoRef.current;
     if (!video || introFinished) return;
@@ -134,12 +167,13 @@ export default function HomeHero() {
       video.addEventListener("canplay", startPlayback, { once: true });
     }
 
-    // Safety timeout: automatically transition after 10 seconds if user is idle
+    // Safety timeout: automatically transition after video finishes (mobile ~7.7s, desktop ~10s)
+    const safetyDuration = isMobile ? 8500 : 10500;
     const safetyTimer = setTimeout(() => {
       if (!finishedRef.current) {
         finishIntro();
       }
-    }, 10000);
+    }, safetyDuration);
 
     return () => {
       clearTimeout(safetyTimer);
@@ -147,7 +181,7 @@ export default function HomeHero() {
         video.removeEventListener("canplay", startPlayback);
       }
     };
-  }, [introFinished, finishIntro]);
+  }, [introFinished, finishIntro, isMobile]);
 
   // Automatically advance slides every 6.5 seconds.
   useEffect(() => {
@@ -238,12 +272,13 @@ export default function HomeHero() {
                 <div className="relative z-10 flex h-full w-full items-center justify-center bg-white">
                   <video
                     ref={videoRef}
-                    src={introVideo}
-                    poster={introPoster}
+                    key={isMobile ? "intro-video-mobile" : "intro-video-desktop"}
+                    src={activeIntroVideo}
+                    poster={activeIntroPoster}
                     autoPlay
                     muted
-                    defaultMuted
                     playsInline
+                    webkit-playsinline="true"
                     preload="auto"
                     onTimeUpdate={handleTimeUpdate}
                     onEnded={finishIntro}
@@ -263,7 +298,7 @@ export default function HomeHero() {
                           <Play className="h-7 w-7 translate-x-0.5 fill-current sm:h-8 sm:w-8" />
                         </div>
                         <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-slate-800 group-hover:text-blue-600 sm:text-sm">
-                          Click to Watch Intro
+                          {isMobile ? "Tap to Watch Intro" : "Click to Watch Intro"}
                         </span>
                       </button>
                     </div>
